@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@jbx-protocol/juice-contracts-v3": "^2.0.3",
+    "@openzeppelin/contracts": "^4.8.1",
+    "@paulrberg/contracts": "^3.7.0"
+  }
+}

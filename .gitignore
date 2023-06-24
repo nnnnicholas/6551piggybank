@@ -1,0 +1,21 @@
+# Local config
+.vscode
+.DS_Store
+
+# Dotenv file
+.env
+
+# Dependencies
+node_modules/
+
+# Compiler files
+cache/
+out/
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+# Logs
+yarn-error.log
