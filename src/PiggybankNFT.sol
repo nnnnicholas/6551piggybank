@@ -9,7 +9,7 @@ import "reference/src/interfaces/IERC6551Registry.sol";
 /// @notice An NFT piggybank that accepts ETH.
 /// @dev An ERC-721 NFT piggybank implementation.
 /// @author nnnnicholas
-contract PiggybankNFT is ERC721, IERC6551Account {
+contract PiggybankNFT is ERC721 {
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
@@ -63,7 +63,7 @@ contract PiggybankNFT is ERC721, IERC6551Account {
      */
     function tokenURI(
         uint256 tokenId
-    ) public view virtual returns (string memory) {
+    ) public view virtual override returns (string memory) {
         _requireMinted(tokenId);
     }
 
@@ -76,11 +76,7 @@ contract PiggybankNFT is ERC721, IERC6551Account {
         owner = ownerOf(tokenId);
 
         // Clear approvals
-        delete _tokenApprovals[tokenId];
-
-        // Decrease balance with checked arithmetic, because an `ownerOf` override may
-        // invalidate the assumption that `_balances[from] >= 1`.
-        _balances[owner] -= 1;
+        removeTokenApprovals(tokenId);
 
         // Get the account address
         address account = getAccount(tokenId);
