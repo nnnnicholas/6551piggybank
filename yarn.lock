@@ -47,6 +47,11 @@
   dependencies:
     prb-math "^2.4.1"
 
+base64-sol@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/base64-sol/-/base64-sol-1.1.0.tgz#39c3c91a35790b6eb3b8e73114b46bacf0fc2865"
+  integrity sha512-mksLxtFyBcXd3LYK5UxyMj29YR//zoaeXpJaKRbnLQC0E99oCJl7VpKaJDXWAuTvnhxBU9XNYzhxSL8umsrxWg==
+
 bn.js@^5.2.1:
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-5.2.1.tgz#0bc527a6a0d18d0aa8d5b0538ce4a77dccfa7b70"

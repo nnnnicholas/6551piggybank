@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+import {Base64} from "base64-sol/base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+// import "./MyERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "reference/src/lib/ERC6551AccountLib.sol";
 import "reference/src/interfaces/IERC6551Registry.sol";
+import "juice-token-resolver/src/Libraries/StringSlicer.sol";
 
 /// @title PiggybankNFT
 /// @notice An NFT piggybank that accepts ETH.
@@ -68,34 +71,48 @@ contract PiggybankNFT is ERC721 {
     ) public view virtual override returns (string memory) {
         _requireMinted(tokenId);
         address account = getAccount(tokenId);
-        string[] memory uri - new string[](4);]; 
-        uri[0] = string("data:application/json;base64,");
-        uri[1] =  string(
+        string[] memory uriParts = new string[](4);
+        string memory balance = (address(account).balance / 10 ** 16)
+            .toString();
+        string memory ethBalanceTwoDecimals = string.concat(
+            StringSlicer.slice(balance, 0, 0),
+            ".",
+            StringSlicer.slice(balance, 1, 2)
+        );
+        uriParts[0] = string("data:application/json;base64,");
+        uriParts[1] = string(
             abi.encodePacked(
-                '{"name":"Piggybank ' tokenId.toString() '",',
+                '{"name":"Piggybank ',
+                tokenId.toString(),
+                '",',
                 '"description":"Piggybanks are NFT owned accounts (6551) that accept ETH and only return it when burned. Burned NFTs are sent to their own 6551 addresses, making them ",',
                 '"image":"data:image/svg+xml;base64,'
             )
         );
-        uri[2] = Base64.encode(
+        uriParts[2] = Base64.encode(
             abi.encodePacked(
-                '<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">'
-                ,'<rect width="1000" height="1000" fill="beige"/>'
-                ,'<circle r="50" cx="450" cy="450" fill="blue" />'
-                ,'<text x="40" y="35" font-size="28px">'
-                ,'Piggybank #', id.toString() 'contains ', (address(this).balance / 10**16 ).toString(), ' ETH'
-                ,'</text>'
-                ,'</svg>'
+                '<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">',
+                '<rect width="1000" height="1000" fill="beige"/>',
+                '<text x="20" y="400" font-size="50px">',
+                "Piggybank #",
+                tokenId.toString(),
+                "contains ",
+                ethBalanceTwoDecimals,
+                " ETH",
+                "</text>",
+                "</svg>"
             )
         );
-        uri[3] = string('"}');
+        uriParts[3] = string('"}');
 
         string memory uri = string.concat(
-            uri[0],
-            Base64.encode(abi.encodePacked(uri[1], uri[2], uri[3]))
+            uriParts[0],
+            Base64.encode(
+                abi.encodePacked(uriParts[1], uriParts[2], uriParts[3])
+            )
         );
-        
-        return uri; 
+
+        return uri;
     }
 
     function burn(uint256 tokenId) internal virtual {
@@ -107,7 +124,13 @@ contract PiggybankNFT is ERC721 {
         owner = ownerOf(tokenId);
 
         // Clear approvals
-        removeTokenApprovals(tokenId);
+        // Should implement a function that zeroes out token approvals in the 721 contract -- because we can't access the _tokenApprovals array from this contract.
+        //    function removeTokenApprovals(uint tokenId) public virtual {
+        //   require(
+        //     _isApprovedOrOwner(_msgSender(), tokenId),
+        //   "ERC721: transfer caller is not owner nor approved"
+        // );
+        // delete _tokenApprovals[tokenId];
 
         // Get the account address
         address account = getAccount(tokenId);
