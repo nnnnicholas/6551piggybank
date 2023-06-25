@@ -57,6 +57,24 @@ contract PiggybankNFT is ERC721 {
             );
     }
 
+    function createAccount(uint tokenId) public returns (address) {
+        return
+            registry.createAccount(
+                implementation,
+                chainId,
+                tokenContract,
+                tokenId,
+                salt,
+                ""
+            );
+    }
+
+    function addEth(uint tokenId) external payable {
+        address account = getAccount(tokenId);
+        (bool success, ) = account.call{value: msg.value}("");
+        require(success, "Failed to send ETH");
+    }
+
     function mint() external payable {
         require(totalSupply < maxSupply, "Max supply reached");
         require(msg.value >= price, "Insufficient funds");
@@ -72,47 +90,81 @@ contract PiggybankNFT is ERC721 {
         _requireMinted(tokenId);
         address account = getAccount(tokenId);
         string[] memory uriParts = new string[](4);
-        string memory balance = (address(account).balance / 10 ** 16)
-            .toString();
-        string memory ethBalanceTwoDecimals = string.concat(
-            StringSlicer.slice(balance, 0, bytes(balance).length - 2),
-            ".",
-            StringSlicer.slice(
-                balance,
-                bytes(balance).length - 2,
-                bytes(balance).length
-            )
-        );
-        uriParts[0] = string("data:application/json;base64,");
-        uriParts[1] = string(
-            abi.encodePacked(
-                '{"name":"Piggybank ',
-                tokenId.toString(),
-                '",',
-                '"description":"Piggybanks are NFT owned accounts (6551) that accept ETH and only return it when burned. Burned NFTs are sent to their own 6551 addresses, making them ",',
-                '"attributes":[{"trait_type":"Balance","value":"',
-                ethBalanceTwoDecimals,
-                ' ETH"}],',
-                '"image":"data:image/svg+xml;base64,'
-            )
-        );
-        uriParts[2] = Base64.encode(
-            abi.encodePacked(
-                '<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">',
-                '<rect width="1000" height="1000" fill="hsl(',
-                (address(account).balance / 10 ** 18).toString(),
-                ', 100%, 50%)"/>',
-                '<text x="20" y="400" color="white" font-size="50px">',
-                "Piggybank #",
-                tokenId.toString(),
-                " contains ",
-                ethBalanceTwoDecimals,
-                " ETH",
-                "</text>",
-                "</svg>"
-            )
-        );
-        uriParts[3] = string('"}');
+        string memory balance = "0";
+        string memory ethBalanceTwoDecimals = "0";
+        if (address(account).balance > 0) {
+            balance = (address(account).balance / 10 ** 16).toString();
+            ethBalanceTwoDecimals = string.concat(
+                StringSlicer.slice(balance, 0, bytes(balance).length - 2),
+                ".",
+                StringSlicer.slice(
+                    balance,
+                    bytes(balance).length - 2,
+                    bytes(balance).length
+                )
+            );
+        }
+        if (ownerOf(tokenId) == account) {
+            uriParts[0] = string("data:application/json;base64,");
+            uriParts[1] = string(
+                abi.encodePacked(
+                    '{"name":"Piggybank #',
+                    tokenId.toString(),
+                    ' (Burned)",',
+                    '"description":"Piggybanks are NFT owned accounts (6551) that accept ETH and only return it when burned. Burned NFTs are sent to their own 6551 addresses, making them ",',
+                    '"attributes":[{"trait_type":"Balance","value":"0"},{"trait_type":"Status","value":"Burned"}],',
+                    '"image":"data:image/svg+xml;base64,'
+                )
+            );
+            uriParts[2] = Base64.encode(
+                abi.encodePacked(
+                    '<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">',
+                    '<rect width="1000" height="1000" fill="black"/>',
+                    '<text x="80" y="276" fill="white" font-family="Helvetica" font-size="130" font-weight="bold">',
+                    "Piggybank #",
+                    tokenId.toString(),
+                    '</text>',
+                    '<text x="80" y="425" fill="white" font-family="Helvetica" font-size="130" font-weight="bold">',
+                    " is burned </text>",
+                    "</svg>"
+                )
+            );
+            uriParts[3] = string('"}');
+        } else {
+            uriParts[0] = string("data:application/json;base64,");
+            uriParts[1] = string(
+                abi.encodePacked(
+                    '{"name":"Piggybank #',
+                    tokenId.toString(),
+                    '",',
+                    '"description":"Piggybanks are NFT owned accounts (6551) that accept ETH and only return it when burned. Burned NFTs are sent to their own 6551 addresses, making them ",',
+                    '"attributes":[{"trait_type":"Balance","value":"',
+                    ethBalanceTwoDecimals,
+                    ' ETH"},{"trait_type":"Status","value":"Exists"}],',
+                    '"image":"data:image/svg+xml;base64,'
+                )
+            );
+            uriParts[2] = Base64.encode(
+                abi.encodePacked(
+                    '<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">',
+                    '<rect width="1000" height="1000" fill="hsl(',
+                    (address(account).balance / 10 ** 17).toString(),
+                    ', 78%, 56%)"/>',
+                    '<text x="80" y="276" fill="white" font-family="Helvetica" font-size="130" font-weight="bold">',
+                    "Piggybank #",
+                    tokenId.toString(),
+                    '</text>',
+                    '<text x="80" y="425" fill="white" font-family="Helvetica" font-size="130" font-weight="bold">',
+                    " contains </text>",
+                    '<text x="80" y="574" fill="white" font-family="Helvetica" font-size="130" font-weight="bold">',
+                    ethBalanceTwoDecimals,
+                    " ETH",
+                    "</text>",
+                    "</svg>"
+                )
+            );
+            uriParts[3] = string('"}');
+        }
 
         string memory uri = string.concat(
             uriParts[0],
@@ -125,6 +177,11 @@ contract PiggybankNFT is ERC721 {
     }
 
     function burn(uint256 tokenId) external virtual {
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            "ERC721: transfer caller is not owner nor approved"
+        );
+
         address owner = ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId, 1);
@@ -142,10 +199,10 @@ contract PiggybankNFT is ERC721 {
         // delete _tokenApprovals[tokenId];
 
         // Get the account address
-        address account = getAccount(tokenId);
+        address account = createAccount(tokenId);
 
         // Burn the account by sending the NFT to its own account address
-        transferFrom(owner, account, tokenId);
+        safeTransferFrom(owner, account, tokenId);
 
         _afterTokenTransfer(owner, address(0), tokenId, 1);
     }

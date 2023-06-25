@@ -14,7 +14,11 @@ import "reference/src/lib/ERC6551AccountLib.sol";
 /// @author nnnnicholas
 /// @notice An NFT piggybank that accepts ETH. The ETH inside can only be retrieved by burning the NFT that owns this account.
 /// @dev An ERC-6551 NFT account wallet implementation with a piggybank mechanic. Based on jaydenwindle's SimpleERC6551Account.sol.
-contract Piggybank6551Implementation is IERC165, IERC6551Account, IERC721Receiver {
+contract Piggybank6551Implementation is
+    IERC165,
+    IERC6551Account,
+    IERC721Receiver
+{
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
 //////////////////////////////////////////////////////////////*/

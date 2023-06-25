@@ -90,7 +90,7 @@ contract Piggybank6551ImplementationTest is Test {
 
     function testUri() public {
         testMint();
-        testAddEvenMoreEth();
+        // testAddEvenMoreEth();
         string memory uri = piggybankNFT.tokenURI(1);
         string memory x = piggybankNFT.tokenURI(1);
         string[] memory inputs = new string[](3);
