@@ -73,12 +73,14 @@ contract Piggybank6551ImplementationTest is Test {
         piggybankNFT.getAccount(1).call{value: 1.2345 ether}("");
         vm.stopPrank();
     }
+
     function testAddMoreEth() public {
         testAddEth();
         vm.startPrank(minter, minter);
         piggybankNFT.getAccount(1).call{value: 100.1 ether}("");
         vm.stopPrank();
     }
+
     function testAddEvenMoreEth() public {
         testAddMoreEth();
         vm.startPrank(minter, minter);
@@ -98,4 +100,17 @@ contract Piggybank6551ImplementationTest is Test {
         // bytes memory res = vm.ffi(inputs);
         vm.ffi(inputs);
     }
+
+    // idk how to account for gas in this test
+    // function testBurn() public {
+    //     testMint();
+    //     uint balanceBeforeAddingEth = address(minter).balance;
+    //     testAddEth();
+    //     uint balanceBeforeBurn = address(minter).balance;
+    //     vm.startPrank(minter, minter);
+    //     piggybankNFT.burn(1);
+    //     vm.stopPrank();
+    //     uint balanceAfterBurn = address(minter).balance;
+    //     assertEq(balanceBeforeBurn + 1.2345 ether, balanceAfterBurn);
+    // }
 }

@@ -124,7 +124,7 @@ contract PiggybankNFT is ERC721 {
         return uri;
     }
 
-    function burn(uint256 tokenId) internal virtual {
+    function burn(uint256 tokenId) external virtual {
         address owner = ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId, 1);
