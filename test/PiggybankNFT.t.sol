@@ -18,22 +18,22 @@ contract Piggybank6551ImplementationTest is Test {
     IERC6551Registry goerliRegistry;
 
     Piggybank6551Implementation piggybank6551Implementation;
-    PiggybankNFT piggybankNFT =
-        new PiggybankNFT(
-            address(piggybank6551Implementation),
-            address(goerliRegistry),
-            100,
-            10000000000000000
-        );
+    PiggybankNFT piggybankNFT;
 
     function setUp() public {
-        vm.deal(deployer, 10 ether);
-        vm.deal(minter, 10 ether);
+        vm.deal(deployer, 1000 ether);
+        vm.deal(minter, 1000 ether);
         vm.startPrank(deployer, deployer);
         goerliRegistry = IERC6551Registry(
             0x02101dfB77FDE026414827Fdc604ddAF224F0921
         );
         piggybank6551Implementation = new Piggybank6551Implementation();
+        piggybankNFT = new PiggybankNFT(
+            address(piggybank6551Implementation),
+            address(goerliRegistry),
+            100,
+            10000000000000000
+        );
         vm.stopPrank();
     }
 
@@ -52,5 +52,50 @@ contract Piggybank6551ImplementationTest is Test {
             1,
             0
         );
+    }
+
+    function testGetAccount() public {
+        testMint();
+        address accountAccordingToNFT = piggybankNFT.getAccount(1);
+        address accountAccordingToRegistry = goerliRegistry.account(
+            address(piggybank6551Implementation),
+            31337, // HEVM chainId for some reason
+            address(piggybankNFT),
+            1,
+            0
+        );
+        assertEq(accountAccordingToNFT, accountAccordingToRegistry);
+    }
+
+    function testAddEth() public {
+        testMint();
+        vm.startPrank(minter, minter);
+        piggybankNFT.getAccount(1).call{value: 1.2345 ether}("");
+        vm.stopPrank();
+    }
+    function testAddMoreEth() public {
+        testAddEth();
+        vm.startPrank(minter, minter);
+        piggybankNFT.getAccount(1).call{value: 100.1 ether}("");
+        vm.stopPrank();
+    }
+    function testAddEvenMoreEth() public {
+        testAddMoreEth();
+        vm.startPrank(minter, minter);
+        piggybankNFT.getAccount(1).call{value: 100.14494949 ether}("");
+        vm.stopPrank();
+    }
+
+    function testUri() public {
+        testMint();
+        testAddEvenMoreEth();
+        string memory uri = piggybankNFT.tokenURI(1);
+        string memory x = piggybankNFT.tokenURI(1);
+        string[] memory inputs = new string[](3);
+        inputs[0] = "node";
+        inputs[1] = "./open.js";
+        inputs[2] = x;
+        // bytes memory res = vm.ffi(inputs);
+        vm.ffi(inputs);
     }
 }

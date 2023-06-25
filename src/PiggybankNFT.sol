@@ -75,9 +75,13 @@ contract PiggybankNFT is ERC721 {
         string memory balance = (address(account).balance / 10 ** 16)
             .toString();
         string memory ethBalanceTwoDecimals = string.concat(
-            StringSlicer.slice(balance, 0, 0),
+            StringSlicer.slice(balance, 0, bytes(balance).length - 2),
             ".",
-            StringSlicer.slice(balance, 1, 2)
+            StringSlicer.slice(
+                balance,
+                bytes(balance).length - 2,
+                bytes(balance).length
+            )
         );
         uriParts[0] = string("data:application/json;base64,");
         uriParts[1] = string(
@@ -86,17 +90,22 @@ contract PiggybankNFT is ERC721 {
                 tokenId.toString(),
                 '",',
                 '"description":"Piggybanks are NFT owned accounts (6551) that accept ETH and only return it when burned. Burned NFTs are sent to their own 6551 addresses, making them ",',
+                '"attributes":[{"trait_type":"Balance","value":"',
+                ethBalanceTwoDecimals,
+                ' ETH"}],',
                 '"image":"data:image/svg+xml;base64,'
             )
         );
         uriParts[2] = Base64.encode(
             abi.encodePacked(
                 '<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">',
-                '<rect width="1000" height="1000" fill="beige"/>',
-                '<text x="20" y="400" font-size="50px">',
+                '<rect width="1000" height="1000" fill="hsl(',
+                (address(account).balance / 10 ** 18).toString(),
+                ', 100%, 50%)"/>',
+                '<text x="20" y="400" color="white" font-size="50px">',
                 "Piggybank #",
                 tokenId.toString(),
-                "contains ",
+                " contains ",
                 ethBalanceTwoDecimals,
                 " ETH",
                 "</text>",
