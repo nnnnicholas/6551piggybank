@@ -22,11 +22,15 @@ contract PiggybankNFT is ERC721, IERC6551Account {
     uint public immutable maxSupply; // The maximum number of tokens that can be minted on this contract
     uint public immutable price;
 
-
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(address _implementation, address _registry, uint _maxSupply, uint _price) ERC721("PiggybankNFT", "PIGGY") {
+    constructor(
+        address _implementation,
+        address _registry,
+        uint _maxSupply,
+        uint _price
+    ) ERC721("PiggybankNFT", "PIGGY") {
         implementation = _implementation;
         registry = IERC6551Registry(_registry);
         maxSupply = _maxSupply;
@@ -49,7 +53,8 @@ contract PiggybankNFT is ERC721, IERC6551Account {
     }
 
     function mint() external payable {
-        require 
+        require(totalSupply < maxSupply, "Max supply reached");
+        require(msg.value >= price, "Insufficient funds");
         _safeMint(msg.sender, ++totalSupply);
     }
 
