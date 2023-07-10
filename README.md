@@ -4,7 +4,7 @@ For more info on this project visit the EthWaterloo page describing and demoing:
 See the project on Goerli Opensea: https://testnets.opensea.io/collection/piggybanknft6551
 
 
-# juice-contract-template
+# contract-template
 Template used to code juicy solidity stuff - includes forge, libs, etc. 
 
 This template is a good starting point for building solidity extensions to the Juicebox Protocol. Forking this template may help you to avoid submodule related dependency issues down the road.
