@@ -1,3 +1,9 @@
+# 6551piggybank
+For more info on this project visit the EthWaterloo page describing and demoing: https://ethglobal.com/showcase/piggybank-6551-nft-e2ai5
+
+See the project on Goerli Opensea: https://testnets.opensea.io/collection/piggybanknft6551
+
+
 # juice-contract-template
 Template used to code juicy solidity stuff - includes forge, libs, etc. 
 
